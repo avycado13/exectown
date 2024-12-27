@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Val Town Town</title>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.0/min/vs/loader.min.js"></script>
+        </head>
+        <body>
+            <h1>Val Town Town</h1>
+            <p>Write a Python function and deploy it with one click!</p>
+            <form method="POST" action="/submit" onsubmit="return updateHandlerField()">
+                <div id="editor" style="width: 100%; height: 300px; border: 1px solid #ccc;"></div>
+                <input type="hidden" name="handler" id="handler">
+                <button type="submit">Deploy!</button>
+            </form>
+            <script>
+                let editor;
+        
+                require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.0/min/vs' } });
+                require(['vs/editor/editor.main'], function () {
+                    editor = monaco.editor.create(document.getElementById('editor'), {
+                        value: 'def handler(req):\\n    return {"message": "Hello, world!"}',
+                        language: 'python',
+                        theme: 'vs-dark',
+                    });
+                });
+        
+                function updateHandlerField() {
+                    const handlerContent = editor.getValue();
+                    document.getElementById('handler').value = handlerContent;
+                    return true;
+                }
+            </script>
+        </body>
+        </html>
