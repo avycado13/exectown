@@ -173,3 +173,4 @@ cython_debug/
 
 # Files generated on run
 instance/
+.DS_Store

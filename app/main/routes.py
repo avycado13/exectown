@@ -3,7 +3,7 @@ from flask import render_template, redirect, request, jsonify, render_template_s
 from markupsafe import Markup
 import datetime
 from app.extensions import logger  # Fix this import
-from app.helpers import insert_content, get_content, with_handler_logger  # Fix this import
+from app.helpers import insert_content, get_content, with_handler_logger, import_remote_package  # Fix this import
 
 @main.route("/")
 def index():
@@ -47,25 +47,22 @@ def serve_content(content_id,handler_logger):
         try:
             logger.info("Executing handler code.")
             # Define a restricted environment for execution
+            safe_builtins = {
+                "len": len, "range": range, "print": print,
+                "str": str, "int": int, "float": float,
+                "bool": bool, "dict": dict, "list": list,
+                "set": set, "tuple": tuple, "sum": sum,
+                "min": min, "max": max, "abs": abs,
+                "round": round, "type": type
+            }
             safe_globals = {
-                "__builtins__": {
-                    "len": len,
-                    "range": range,
-                    "print": print,
-                    "str": str,
-                    "int": int,
-                    "float": float,
-                    "bool": bool,
-                    "dict": dict,
-                    "list": list,
-                    "set": set,
-                    "tuple": tuple,
-                    "json": jsonify,
-                    "datetime": datetime,
-                    "request": request,
-                    "render_template_string": render_template_string,
-                    "logger": handler_logger
-                }
+                "__builtins__": safe_builtins,
+                "json": jsonify,
+                "datetime": datetime,
+                "request": request,
+                "render_template_string": render_template_string,
+                "logger": handler_logger,
+                "import_remote_package": import_remote_package
             }
             safe_locals = {}
             exec(handler_code, safe_globals, safe_locals)

@@ -3,6 +3,8 @@ from app.models import Content
 import logging
 from functools import wraps
 import httpimport
+import sys
+
 
 
 def insert_content(body):
@@ -56,7 +58,7 @@ def with_handler_logger(f):
         return f(content_id, handler_logger, *args, **kwargs)
     return wrapper
 
-def import_remote_package(url, package_name):
+def import_remote_package(url: str, package_name: str):
     """
     Imports a Python package or module from a remote URL using httpimport.
 
@@ -71,8 +73,30 @@ def import_remote_package(url, package_name):
         ImportError: If the module cannot be imported.
     """
     try:
-        with httpimport.remote_repo(url):
-            module = __import__(package_name)
-            return module
+        if url.startswith("github:"):
+            # Parse the GitHub URL (e.g., github:user/repo)
+            _, user_repo = url.split(":", 1)
+            username, repo = user_repo.split("/", 1)
+            # Use httpimport to import from GitHub
+            with httpimport.github_repo(username, repo):
+                module = __import__(package_name)
+                return module
+        elif url.startswith("https"):
+            # Use httpimport to import from a generic URL (e.g., https://someurl.com/package.zip)
+            with httpimport.remote_repo(url):
+                module = __import__(package_name)
+                return module
+        elif url.startswith("pypi:"):
+            # If the URL starts with pypi, attempt to import from PyPI
+            _, pypi_name = url.split(":", 1)
+            with httpimport.pypi_repo(pypi_name):
+                module = __import__(package_name)
+                return module
+        elif url.startswith("http"):
+            # Disallow importing from non-secure HTTP URLs
+            raise ValueError("For your own safety, we do not support importing from http URLs.")
+        else:
+            raise ValueError(f"Unsupported URL scheme: {url}")
+
     except Exception as e:
-        raise ImportError(f"Failed to import module '{package_name}' from URL '{url}': {e}")
+        raise ImportError(f"Failed to import module '{package_name}' from URL '{url}': {str(e)}")

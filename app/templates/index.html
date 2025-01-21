@@ -20,7 +20,7 @@
                 require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.0/min/vs' } });
                 require(['vs/editor/editor.main'], function () {
                     editor = monaco.editor.create(document.getElementById('editor'), {
-                        value: 'def handler(req):\\n    return {"message": "Hello, world!"}',
+                        value: 'def handler(req):\n    return {"message": "Hello, world!"}',
                         language: 'python',
                         theme: 'vs-dark',
                     });
